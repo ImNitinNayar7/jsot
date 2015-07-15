@@ -201,39 +201,47 @@ describe('Account', function() {
             var account = Account.create('othertest', '123');
             account.type = 2;
             account.save(function(err, result) {
-                assert.strictEqual(result.affectedRows, 1);
-                Account.find('othertest', function(err, result) {
-                    result = result[0];
-                    assert.ifError(err);
+                if (err) {
+                    done(err);
+                } else {
+                    assert.strictEqual(result.affectedRows, 1);
+                    Account.find('othertest', function(err, result) {
+                        result = result[0];
+                        assert.ifError(err);
 
-                    // a new insertion should be just after beforeEach insertion
-                    assert(account.id > currentId);
-                    assert.strictEqual(result.name, 'othertest');
-                    assert.strictEqual(result.password, sha1('123'));
-                    assert.strictEqual(result.type, 2);
+                        // a new insertion should be just after beforeEach insertion
+                        assert(account.id > currentId);
+                        assert.strictEqual(result.name, 'othertest');
+                        assert.strictEqual(result.password, sha1('123'));
+                        assert.strictEqual(result.type, 2);
 
-                    // just to assure db is clean
-                    result.delete();
+                        // just to assure db is clean
+                        result.delete();
 
-                    done();
-                });
+                        done();
+                    });
+                }
             });
         });
 
         it('should update an existing account', function(done) {
             var account = Account.create('test', '123');
             account.save(function(err, result) {
-                // replace into performs a delete and an insert when updating
-                assert.strictEqual(result.affectedRows, 2);
-                Account.find('test', function(err, result) {
-                    result = result[0];
-                    assert.ifError(err);
-                    assert.strictEqual(result.id, account.id);
-                    assert.strictEqual(result.name, 'test');
-                    assert.strictEqual(result.password, sha1('123'));
+                if (err) {
+                    done(err);
+                } else {
+                    // replace into performs a delete and an insert when updating
+                    assert.strictEqual(result.affectedRows, 2);
+                    Account.find('test', function(err, result) {
+                        result = result[0];
+                        assert.ifError(err);
+                        assert.strictEqual(result.id, account.id);
+                        assert.strictEqual(result.name, 'test');
+                        assert.strictEqual(result.password, sha1('123'));
 
-                    done();
-                });
+                        done();
+                    });
+                }
             })
         });
     });

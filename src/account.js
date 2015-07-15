@@ -7,16 +7,15 @@ module.exports = function(db) {
         var self = this;
 
         for (var prop in properties) {
-            if (properties.hasOwnProperty(prop) && Account.validProperties.indexOf(prop) > -1) {
+            if (properties.hasOwnProperty(prop) && Account.prototype.hasOwnProperty(prop)) {
                 self[prop] = properties[prop];
             }
         }
     };
 
-    Account.validProperties = ['id', 'name', 'password', 'type', 'premdays', 'lastday', 'email', 'creation'];
-
     Object.defineProperties(Account.prototype, {
         id: {
+            enumerable: true,
             get: function() {
                 return this._id || 0;
             },
@@ -28,7 +27,12 @@ module.exports = function(db) {
                 }
             }
         },
+        name: {
+            enumerable: true,
+            writable: true
+        },
         password: {
+            enumerable: true,
             get: function() {
                 return this._password;
             },
@@ -37,6 +41,7 @@ module.exports = function(db) {
             }
         },
         type: {
+            enumerable: true,
             get: function() {
                 return this._type || 1;
             },
@@ -49,6 +54,7 @@ module.exports = function(db) {
             }
         },
         premdays: {
+            enumerable: true,
             get: function() {
                 return this._premdays || 0;
             },
@@ -61,10 +67,12 @@ module.exports = function(db) {
             }
         },
         lastday: {
+            enumerable: true,
             value: 0,
             writable: true
         },
         email: {
+            enumerable: true,
             get: function() {
                 return this._email || '';
             },
@@ -73,6 +81,7 @@ module.exports = function(db) {
             }
         },
         creation: {
+            enumerable: true,
             get: function() {
                 return this._creation || 0;
             },
@@ -83,10 +92,6 @@ module.exports = function(db) {
                     this._creation = creation;
                 }
             }
-        },
-        bans: {
-            value: [],
-            writable: true
         }
     });
 
@@ -113,12 +118,11 @@ module.exports = function(db) {
             properties = {name: properties};
         }
 
-        var filter = [];
-        for (var prop in properties) {
-            if (properties.hasOwnProperty(prop) && Account.validProperties.indexOf(prop) > -1) {
-                filter.push('`' + prop + '`=:' + prop);
+        var filter = Object.keys(properties).map(function(prop) {
+            if (Account.prototype.hasOwnProperty(prop)) {
+                return '`' + prop + '`=:' + prop;
             }
-        }
+        });
 
         db.getConnection(function(err, connection) {
             if (err) {
@@ -187,26 +191,31 @@ module.exports = function(db) {
         var self = this;
 
         if (!self.name || !self.password) {
+            // this situation should never occur if you use the API properly
+            /* istanbul ignore next */
             if (callback) {
                 callback(new Error('Account name or password not set'), null);
             }
         } else {
             var map = {};
-            for (var prop in Account.validProperties) {
-                var key = Account.validProperties[prop];
-                map[key] = self[key];
+            for (var prop in Account.prototype) {
+                if (Account.prototype.hasOwnProperty(prop)) {
+                    map[prop] = self[prop];
+                }
             }
-            delete map.id;
 
             db.getConnection(function(err, connection) {
                 if (err) {
+                    /* istanbul ignore next */
                     if (callback) {
                         callback(err, null);
                     }
                 } else {
                     connection.query('REPLACE INTO `accounts`(`name`, `password`, `type`, `premdays`, `lastday`, `email`, `creation`) VALUES (:name, :password, :type, :premdays, :lastday, :email, :creation)', map, function(err, result) {
                         connection.release();
-                        self.id = result.insertId;
+                        if (result) {
+                            self.id = result.insertId;
+                        }
                         if (callback) {
                             callback(err, result);
                         }
