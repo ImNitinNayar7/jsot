@@ -126,6 +126,7 @@ module.exports = function(db) {
 
         db.getConnection(function(err, connection) {
             if (err) {
+                /* istanbul ignore next */
                 if (callback) {
                     callback(err, null);
                 }
@@ -157,6 +158,7 @@ module.exports = function(db) {
 
         db.getConnection(function(err, connection) {
             if (err) {
+                /* istanbul ignore next */
                 if (callback) {
                     callback(err);
                 }
