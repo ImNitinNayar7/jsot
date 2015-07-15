@@ -16,6 +16,56 @@ describe('Account', function() {
         done();
     });
 
+    it('should not allow changing id', function(done) {
+        var account = new Account({
+            id: 1
+        });
+
+        assert.throws(function() {
+            account.id = 2;
+        }, /id can not be set/);
+
+        done();
+    });
+
+    it('should reject invalid value for type', function(done) {
+        var account = new Account();
+
+        assert.throws(function() {
+            account.type = 0;
+        }, /type.*1 and 5/);
+
+        assert.throws(function() {
+            account.type = 6;
+        }, /type.*1 and 5/);
+
+        done();
+    });
+
+    it('should reject invalid value for premdays', function(done) {
+        var account = new Account();
+
+        assert.throws(function() {
+            account.premdays = -1;
+        }, /premium days.*0 and 65535/);
+
+        assert.throws(function() {
+            account.premdays = 65536;
+        }, /premium days.*0 and 65535/);
+
+        done();
+    });
+
+    it('should accept creation as Date', function(done) {
+        var account = new Account(),
+            now = new Date();
+
+        account.creation = now;
+        assert.strictEqual(account.creation, now.getTime());
+
+        done();
+    });
+
     var currentId;
 
     beforeEach(function(done) {
