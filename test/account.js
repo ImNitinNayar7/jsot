@@ -6,14 +6,25 @@ var db = require('../src/database')('localhost', 'root', '', 'otserv');
 var Account = require('../src/account')(db);
 
 describe('Account', function() {
+    var dateInRange = function(date, base, delta) {
+        if (date instanceof Date) {
+            date = date.getTime();
+        }
+
+        if (base instanceof Date) {
+            base = base.getTime();
+        }
+
+        return date >= base - delta && date <= base + delta;
+    };
 
     it('should assign default values', function(done) {
         var account = new Account();
         assert.strictEqual(account.type, 1);
         assert.strictEqual(account.premdays, 0);
-        assert.strictEqual(account.lastday.getTime(), (new Date(0)).getTime());
+        assert(dateInRange(account.lastday, 0, 0));
         assert.strictEqual(account.email, '');
-        assert.strictEqual(account.creation.getTime(), (new Date()).getTime());
+        assert(dateInRange(account.creation, Date.now(), 2));
         done();
     });
 
@@ -67,12 +78,28 @@ describe('Account', function() {
         done();
     });
 
-    it('should accept creation as timestamp', function(done) {
+    it('should accept lastday as date or timestamp', function(done) {
         var account = new Account(),
-            now = new Date();
+            now = Date.now();
 
-        account.creation = now.getTime();
-        assert.equal(account.creation.getTime(), now.getTime());
+        account.lastday = new Date(now);
+        assert(dateInRange(account.lastday, now, 2));
+
+        account.lastday = now;
+        assert(dateInRange(account.lastday, now, 2));
+
+        done();
+    });
+
+    it('should accept creation as date or timestamp', function(done) {
+        var account = new Account(),
+            now = Date.now();
+
+        account.creation = new Date(now);
+        assert(dateInRange(account.creation, now, 2));
+
+        account.creation = now;
+        assert(dateInRange(account.creation, now, 2));
 
         done();
     });
