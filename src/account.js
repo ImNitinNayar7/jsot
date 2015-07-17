@@ -228,7 +228,7 @@ module.exports = function(db) {
             var map = {};
             for (var prop in Account.prototype) {
                 if (Account.prototype.hasOwnProperty(prop)) {
-                    map[prop] = self[prop];
+                    map[prop] = self['_' + prop];
                 }
             }
 
