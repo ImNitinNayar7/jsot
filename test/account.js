@@ -6,13 +6,14 @@ var db = require('../src/database')('localhost', 'root', '', 'otserv');
 var Account = require('../src/account')(db);
 
 describe('Account', function() {
+
     it('should assign default values', function(done) {
         var account = new Account();
         assert.strictEqual(account.type, 1);
         assert.strictEqual(account.premdays, 0);
-        assert.strictEqual(account.lastday, 0);
+        assert.strictEqual(account.lastday.getTime(), (new Date(0)).getTime());
         assert.strictEqual(account.email, '');
-        assert.strictEqual(account.creation, 0);
+        assert.strictEqual(account.creation.getTime(), (new Date()).getTime());
         done();
     });
 
@@ -24,6 +25,16 @@ describe('Account', function() {
         assert.throws(function() {
             account.id = 2;
         }, /id can not be set/);
+
+        done();
+    });
+
+    it('should reject empty name', function(done) {
+        var account = new Account();
+
+        assert.throws(function() {
+            account.name = '';
+        }, /name can not be empty/);
 
         done();
     });
@@ -56,12 +67,12 @@ describe('Account', function() {
         done();
     });
 
-    it('should accept creation as Date', function(done) {
+    it('should accept creation as timestamp', function(done) {
         var account = new Account(),
             now = new Date();
 
-        account.creation = now;
-        assert.strictEqual(account.creation, now.getTime());
+        account.creation = now.getTime();
+        assert.equal(account.creation.getTime(), now.getTime());
 
         done();
     });
@@ -171,13 +182,11 @@ describe('Account', function() {
         });
 
         it('should not accept empty id or name', function(done) {
-            var account = new Account({
-                name: ''
-            });
+            var account = new Account();
 
             assert.throws(function() {
                 account.fetch(function(err, result) {
-                    if (err) { throw err };
+                    if (err) { throw err }
                 });
             }, /name not set/);
 

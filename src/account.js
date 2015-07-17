@@ -6,6 +6,13 @@ module.exports = function(db) {
     var Account = function(properties) {
         var self = this;
 
+        self._id = 0;
+        self._type = 1;
+        self._premdays = 0;
+        self._lastday = 0;
+        self._email = '';
+        self._creation = (new Date()).getTime();
+
         for (var prop in properties) {
             if (properties.hasOwnProperty(prop) && Account.prototype.hasOwnProperty(prop)) {
                 self[prop] = properties[prop];
@@ -17,7 +24,7 @@ module.exports = function(db) {
         id: {
             enumerable: true,
             get: function() {
-                return this._id || 0;
+                return this._id;
             },
             set: function(id) {
                 if (!this._id) {
@@ -29,7 +36,16 @@ module.exports = function(db) {
         },
         name: {
             enumerable: true,
-            writable: true
+            get: function() {
+                return this._name;
+            },
+            set: function(name) {
+                if (name.length > 0) {
+                    this._name = name;
+                } else {
+                    throw new Error('Account name can not be empty');
+                }
+            }
         },
         password: {
             enumerable: true,
@@ -43,7 +59,7 @@ module.exports = function(db) {
         type: {
             enumerable: true,
             get: function() {
-                return this._type || 1;
+                return this._type;
             },
             set: function(type) {
                 if (type >= 1 && type <= 5) {
@@ -68,8 +84,17 @@ module.exports = function(db) {
         },
         lastday: {
             enumerable: true,
-            value: 0,
-            writable: true
+            get: function() {
+                return new Date(this._lastday);
+            },
+            set: function(lastday) {
+                if (lastday instanceof Date) {
+                    this._lastday = lastday.getTime();
+                } else {
+                    var date = new Date(lastday);
+                    this._lastday = date.getTime();
+                }
+            }
         },
         email: {
             enumerable: true,
@@ -83,13 +108,14 @@ module.exports = function(db) {
         creation: {
             enumerable: true,
             get: function() {
-                return this._creation || 0;
+                return new Date(this._creation);
             },
             set: function(creation) {
                 if (creation instanceof Date) {
                     this._creation = creation.getTime();
                 } else {
-                    this._creation = creation;
+                    var date = new Date(creation);
+                    this._creation = date.getTime();
                 }
             }
         }
