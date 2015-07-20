@@ -2,6 +2,7 @@
 
 var mysql = require('mysql');
 
+/* istanbul ignore next */
 module.exports = function(host, user, password, database) {
     return mysql.createPool({
         connectionLimit: 100,
